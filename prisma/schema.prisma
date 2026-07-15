@@ -1,0 +1,585 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  handle    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile               UserProfile?
+  problemTestCases      ProblemTestCase[]
+  codeDrafts            CodeDraft[]
+  practiceRunLogs       PracticeRunLog[]
+  reviewAttempts        ReviewAttempt[]
+  chatSessions          ChatSession[]
+  problemHistories      ProblemHistory[]
+  l1MemoryEvents        L1MemoryEvent[]
+  l2MemoryFacts         L2MemoryFact[]
+  hintProgresses        AlgorithmHintProgress[]
+  memoryEpisodes        MemoryEpisode[]
+  knowledgeNotes        KnowledgeNote[]
+  mistakeBookEntries    MistakeBookEntry[]
+  readinessGoals        ReadinessGoal[]
+  plannerPlanItems      PlannerPlanItem[]
+  plannerDailyDoseItems PlannerDailyDoseItem[]
+  plannerOutcomes       PlannerOutcome[]
+  reviewSchedules       ReviewSchedule[]
+}
+
+model UserProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  displayName        String
+  interviewGoal      String?
+  preferredLanguages String   @default("[\"Python\"]")
+  strongPatterns     String   @default("[]")
+  weakPatterns       String   @default("[]")
+  explanationStyle   String   @default("[]")
+  outputPreferences  String   @default("[]")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Problem {
+  id                    String   @id @default(cuid())
+  leetcodeNumber        Int      @unique
+  slug                  String   @unique
+  title                 String
+  difficulty            String
+  hot150Order           Int
+  hot150Section         String
+  officialUrl           String
+  tags                  String   @default("[]")
+  starterCodePython     String
+  methodName            String
+  inputContractJson     String
+  outputContractJson    String
+  localRunStatus        String   @default("runnable")
+  localRunStatusMessage String?
+  comparisonStrategy    String   @default("exact")
+  comparisonConfigJson  String   @default("{}")
+  contractKind          String   @default("pure_function")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  testCases             ProblemTestCase[]
+  codeDrafts            CodeDraft[]
+  practiceRunLogs       PracticeRunLog[]
+  reviewAttempts        ReviewAttempt[]
+  chatSessions          ChatSession[]
+  problemHistories      ProblemHistory[]
+  l1MemoryEvents        L1MemoryEvent[]
+  l2MemoryFacts         L2MemoryFact[]
+  hintProgresses        AlgorithmHintProgress[]
+  memoryEpisodes        MemoryEpisode[]
+  mistakeBookEntries    MistakeBookEntry[]
+  plannerPlanItems      PlannerPlanItem[]
+  plannerDailyDoseItems PlannerDailyDoseItem[]
+  plannerOutcomes       PlannerOutcome[]
+  reviewSchedules       ReviewSchedule[]
+}
+
+model ProblemTestCase {
+  id           String   @id @default(cuid())
+  problemId    String
+  userId       String?
+  label        String
+  inputJson    String
+  expectedJson String
+  source       String   @default("public_visible")
+  isVisible    Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([problemId])
+  @@index([userId])
+}
+
+model CodeDraft {
+  id                  String   @id @default(cuid())
+  userId              String
+  problemId           String
+  language            String   @default("Python")
+  content             String   @default("")
+  selectedTestCaseIds String   @default("[]")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem         Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  reviewAttempts  ReviewAttempt[]
+  practiceRunLogs PracticeRunLog[]
+
+  @@unique([userId, problemId, language])
+  @@index([problemId])
+}
+
+model PracticeRunLog {
+  id                   String   @id @default(cuid())
+  userId               String
+  problemId            String
+  codeDraftId          String?
+  language             String   @default("Python")
+  codeHash             String?
+  executionFingerprint String?
+  runOrdinal           Int
+  selectedTestCaseIds  String   @default("[]")
+  status               String
+  passedCount          Int      @default(0)
+  totalCount           Int      @default(0)
+  summary              String
+  provider             String   @default("piston")
+  rawResultJson        String   @default("{}")
+  durationMs           Int?
+  createdAt            DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  codeDraft CodeDraft? @relation(fields: [codeDraftId], references: [id], onDelete: SetNull)
+
+  @@index([userId, problemId])
+  @@index([codeDraftId])
+  @@index([codeHash])
+  @@index([executionFingerprint])
+  @@index([createdAt])
+}
+
+model ReviewAttempt {
+  id                  String   @id @default(cuid())
+  userId              String
+  problemId           String
+  chatSessionId       String
+  codeDraftId         String?
+  language            String   @default("Python")
+  userState           String?
+  userQuestion        String?
+  codeSnapshot        String   @default("")
+  selectedTestCaseIds String   @default("[]")
+  selectedTestsJson   String   @default("[]")
+  coachReplyMarkdown  String?
+  createdAt           DateTime @default(now())
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem            Problem            @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  chatSession        ChatSession        @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  codeDraft          CodeDraft?         @relation(fields: [codeDraftId], references: [id], onDelete: SetNull)
+  runEvidences       RunEvidence[]
+  diagnosisResult    DiagnosisResult?
+  chatMessages       ChatMessage[]
+  problemHistories   ProblemHistory[]
+  l1MemoryEvents     L1MemoryEvent[]
+  l2MemoryFacts      L2MemoryFact[]
+  mistakeBookEntries MistakeBookEntry[]
+  plannerOutcome     PlannerOutcome?
+
+  @@index([userId, problemId])
+  @@index([chatSessionId])
+  @@index([codeDraftId])
+  @@index([createdAt])
+}
+
+model RunEvidence {
+  id                   String   @id @default(cuid())
+  reviewAttemptId      String?
+  chatSessionId        String?
+  source               String   @default("review")
+  toolCallId           String?
+  codeHash             String?
+  executionFingerprint String?
+  evidenceKind         String   @default("executed")
+  status               String
+  passedCount          Int      @default(0)
+  failedCount          Int      @default(0)
+  durationMs           Int?
+  stdout               String?
+  stderr               String?
+  actualOutput         String?
+  expectedOutput       String?
+  firstFailedCaseJson  String?
+  rawResultJson        String   @default("{}")
+  createdAt            DateTime @default(now())
+
+  reviewAttempt ReviewAttempt? @relation(fields: [reviewAttemptId], references: [id], onDelete: Cascade)
+  chatSession   ChatSession?   @relation(fields: [chatSessionId], references: [id], onDelete: SetNull)
+
+  @@index([reviewAttemptId])
+  @@index([chatSessionId])
+  @@index([codeHash])
+  @@index([executionFingerprint])
+  @@index([source])
+}
+
+model DiagnosisResult {
+  id                        String   @id @default(cuid())
+  reviewAttemptId           String   @unique
+  diagnosisJson             String   @default("{}")
+  memoryUpdateCandidateJson String   @default("{}")
+  mistakeTags               String   @default("[]")
+  skillTags                 String   @default("[]")
+  userIssueSummary          String?
+  coachSummary              String?
+  selfCheckQuestion         String?
+  selfCheckAnswer           String?
+  createdAt                 DateTime @default(now())
+
+  reviewAttempt ReviewAttempt @relation(fields: [reviewAttemptId], references: [id], onDelete: Cascade)
+}
+
+model ChatSession {
+  id                    String    @id @default(cuid())
+  userId                String
+  problemId             String
+  title                 String?
+  primaryLanguage       String    @default("Python")
+  isActive              Boolean   @default(true)
+  rollingSummary        String?
+  sessionPlanJson       String?
+  clearedBeforeSequence Int       @default(0)
+  clearedAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem            Problem            @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  reviewAttempts     ReviewAttempt[]
+  messages           ChatMessage[]
+  problemHistories   ProblemHistory[]
+  l1MemoryEvents     L1MemoryEvent[]
+  runEvidences       RunEvidence[]
+  memoryEpisodes     MemoryEpisode[]
+  mistakeBookEntries MistakeBookEntry[]
+
+  @@unique([userId, problemId])
+  @@index([problemId])
+}
+
+model ChatMessage {
+  id              String   @id @default(cuid())
+  sessionId       String
+  reviewAttemptId String?
+  role            String
+  contentMarkdown String
+  metadataJson    String   @default("{}")
+  sequence        Int
+  createdAt       DateTime @default(now())
+
+  session       ChatSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  reviewAttempt ReviewAttempt? @relation(fields: [reviewAttemptId], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, sequence])
+  @@index([reviewAttemptId])
+}
+
+model ProblemHistory {
+  id                  String   @id @default(cuid())
+  userId              String
+  problemId           String
+  reviewAttemptId     String   @unique
+  chatSessionId       String
+  language            String   @default("Python")
+  userState           String?
+  problemTags         String   @default("[]")
+  runStatus           String
+  failedCaseSummary   String?
+  userIssueSummary    String?
+  coachSummary        String?
+  memoryUpdateSummary String?
+  nextRecommendation  String?
+  durationSeconds     Int?
+  createdAt           DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem        Problem         @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  reviewAttempt  ReviewAttempt   @relation(fields: [reviewAttemptId], references: [id], onDelete: Cascade)
+  chatSession    ChatSession     @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  plannerOutcome PlannerOutcome?
+
+  @@index([userId, problemId])
+  @@index([chatSessionId])
+  @@index([createdAt])
+}
+
+model L1MemoryEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  problemId       String?
+  chatSessionId   String?
+  reviewAttemptId String?
+  eventType       String
+  eventJson       String   @default("{}")
+  content         String?
+  source          String?
+  occurredAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem       Problem?       @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  chatSession   ChatSession?   @relation(fields: [chatSessionId], references: [id], onDelete: SetNull)
+  reviewAttempt ReviewAttempt? @relation(fields: [reviewAttemptId], references: [id], onDelete: SetNull)
+
+  @@index([userId, occurredAt])
+  @@index([problemId])
+  @@index([chatSessionId])
+  @@index([reviewAttemptId])
+}
+
+model L2MemoryFact {
+  id                    String   @id @default(cuid())
+  userId                String
+  problemId             String?
+  sourceReviewAttemptId String?
+  factType              String
+  tag                   String
+  label                 String?
+  value                 String?
+  confidence            Float    @default(0.5)
+  evidenceCount         Int      @default(1)
+  lastEvidenceSummary   String?
+  lastSeenAt            DateTime @default(now())
+  status                String   @default("active")
+  source                String   @default("local_review")
+  evidenceTraceIds      String   @default("[]")
+  contradictionSummary  String?
+  validationJson        String   @default("{}")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem             Problem?       @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  sourceReviewAttempt ReviewAttempt? @relation(fields: [sourceReviewAttemptId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, factType, tag])
+  @@index([problemId])
+  @@index([sourceReviewAttemptId])
+  @@index([lastSeenAt])
+}
+
+model AlgorithmHintProgress {
+  id           String   @id @default(cuid())
+  userId       String
+  problemId    String
+  currentLevel Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@index([problemId])
+}
+
+model MemoryEpisode {
+  id             String   @id @default(cuid())
+  userId         String
+  problemId      String?
+  chatSessionId  String?
+  kind           String
+  title          String
+  summary        String
+  outcome        String
+  tags           String   @default("[]")
+  salience       Float    @default(0.5)
+  sourceTraceIds String   @default("[]")
+  createdAt      DateTime @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem     Problem?     @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  chatSession ChatSession? @relation(fields: [chatSessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, kind])
+}
+
+model KnowledgeNote {
+  id             String   @id @default(cuid())
+  userId         String
+  conceptKey     String
+  title          String
+  snippet        String
+  whenToUse      String
+  category       String
+  lookupCount    Int      @default(1)
+  firstNeededAt  DateTime @default(now())
+  lastNeededAt   DateTime @default(now())
+  status         String   @default("active")
+  source         String   @default("user")
+  userEdited     Boolean  @default(false)
+  sourceTraceIds String   @default("[]")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conceptKey])
+  @@index([userId, status, lastNeededAt])
+}
+
+model MistakeBookEntry {
+  id                String   @id @default(cuid())
+  userId            String
+  problemId         String
+  chatSessionId     String?
+  reviewAttemptId   String?
+  title             String
+  guideMarkdown     String
+  selfCheckQuestion String?
+  selfCheckAnswer   String?
+  tags              String   @default("[]")
+  saveCount         Int      @default(1)
+  sourceTraceIds    String   @default("[]")
+  firstSavedAt      DateTime @default(now())
+  lastSavedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem       Problem        @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  chatSession   ChatSession?   @relation(fields: [chatSessionId], references: [id], onDelete: SetNull)
+  reviewAttempt ReviewAttempt? @relation(fields: [reviewAttemptId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, problemId])
+  @@index([userId, lastSavedAt])
+  @@index([problemId])
+  @@index([chatSessionId])
+  @@index([reviewAttemptId])
+}
+
+model ReadinessGoal {
+  id              String   @id @default(cuid())
+  userId          String
+  targetLabel     String
+  interviewDate   DateTime
+  weeklyHours     Float
+  dailyDoseTarget Int      @default(1)
+  planVersion     Int      @default(1)
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user             User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planItems        PlannerPlanItem[]
+  dailyDoseItems   PlannerDailyDoseItem[]
+  outcomes         PlannerOutcome[]
+  reviewSchedules  ReviewSchedule[]
+
+  @@index([userId, status])
+  @@index([interviewDate])
+}
+
+model PlannerPlanItem {
+  id               String    @id @default(cuid())
+  userId           String
+  goalId           String
+  problemId        String
+  source           String    @default("plan")
+  status           String    @default("pending")
+  scheduledDate    DateTime?
+  sortOrder        Int
+  whyJson          String    @default("[]")
+  startedAt        DateTime?
+  lastOpenedAt     DateTime?
+  deferredFromDate DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal           ReadinessGoal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  problem        Problem                @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  outcomes       PlannerOutcome[]
+  dailyDoseItems PlannerDailyDoseItem[]
+
+  @@unique([goalId, problemId])
+  @@index([userId, status, scheduledDate])
+  @@index([userId, goalId, deferredFromDate])
+  @@index([goalId, sortOrder])
+  @@index([problemId])
+}
+
+model PlannerDailyDoseItem {
+  id         String   @id @default(cuid())
+  userId     String
+  goalId     String
+  doseDate   DateTime
+  problemId  String
+  planItemId String?
+  source     String   @default("plan")
+  sortOrder  Int
+  whyJson    String   @default("[]")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal     ReadinessGoal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  problem  Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  planItem PlannerPlanItem? @relation(fields: [planItemId], references: [id], onDelete: SetNull)
+
+  @@unique([goalId, doseDate, problemId])
+  @@index([userId, goalId, doseDate])
+  @@index([planItemId])
+  @@index([problemId])
+}
+
+model PlannerOutcome {
+  id               String   @id @default(cuid())
+  userId           String
+  goalId           String?
+  planItemId       String?
+  problemId        String
+  reviewAttemptId  String   @unique
+  problemHistoryId String   @unique
+  selfRating       String
+  patternTagsJson  String   @default("[]")
+  createdAt        DateTime @default(now())
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal           ReadinessGoal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  planItem       PlannerPlanItem? @relation(fields: [planItemId], references: [id], onDelete: SetNull)
+  problem        Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  reviewAttempt  ReviewAttempt    @relation(fields: [reviewAttemptId], references: [id], onDelete: Cascade)
+  problemHistory ProblemHistory   @relation(fields: [problemHistoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([goalId])
+  @@index([planItemId])
+  @@index([problemId])
+}
+
+model ReviewSchedule {
+  id            String   @id @default(cuid())
+  userId        String
+  goalId        String
+  problemId     String
+  patternTag    String?
+  dueDate       DateTime
+  intervalDays  Int      @default(1)
+  ease          Float    @default(2.5)
+  repetitions   Int      @default(0)
+  lastRating    String
+  lastOutcomeId String?
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal    ReadinessGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  problem Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, goalId, problemId])
+  @@index([userId, dueDate])
+  @@index([goalId, status, dueDate])
+  @@index([patternTag])
+}

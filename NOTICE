@@ -1,0 +1,29 @@
+PatternCoach AI public v0.1
+
+Project license: AGPL-3.0-only. The LICENSE file is the official, unmodified GNU Affero General Public License version 3 text obtained from the GNU Project.
+
+Third-party software
+
+The locked npm package map contains 832 non-root package entries; the installed subset varies by operating system and CPU. License metadata summary at release review: MIT 678; Apache-2.0 60; ISC 41; MPL-2.0 13; LGPL-3.0-or-later 10; BSD-2-Clause 8; BSD-3-Clause 6; Apache-2.0 AND LGPL-3.0-or-later 3; 0BSD 2; and one each under CC0-1.0, CC-BY-4.0, Python-2.0, Unlicense, BlueOak-1.0.0, MIT/ISC, MIT/WTFPL, BSD/MIT/Apache, MPL/Apache, Apache/LGPL, and Apache/LGPL/MIT combinations. One transitive package (`seq-queue`) omits its SPDX field but includes an MIT license file.
+
+Direct runtime dependencies and their package metadata licenses:
+
+- MIT: @hookform/resolvers, @monaco-editor/react, @next/env, Radix UI packages, better-sqlite3, clsx, monaco-editor, Next.js, React, react-dom, react-hook-form, react-markdown, Recharts, remark-gfm, tailwind-merge, Zod.
+- Apache-2.0: Prisma client/SQLite adapter, class-variance-authority, OpenAI JavaScript client.
+- ISC: lucide-react.
+
+The optional `@img/sharp-libvips-linux-x64` transitive package reports LGPL-3.0-or-later. `caniuse-lite` reports CC-BY-4.0 for browser compatibility data. Retain npm's installed license files when redistributing dependency binaries.
+
+Piston
+
+The Docker Compose file references the Engineer Man Piston image by digest. Piston is an independent MIT-licensed service and is not bundled into this source tree. Downloaded language runtimes, container layers, and their licenses remain separate third-party components. Review their notices before redistributing images or runtime packages.
+
+Content and trademarks
+
+The Hot-150 public bank includes factual catalog metadata, original-problem links, independently authored execution contracts, and synthetic visible tests. It does not include bundled official statements, hidden tests, reference solutions, solution hashes, cached responses, or private provenance.
+
+LeetCode and its problem titles are third-party content/trademarks. This project is not affiliated with or endorsed by LeetCode. AGPL-3.0-only applies to this project's covered code and does not grant permission to redistribute third-party LeetCode content.
+
+Compatibility review
+
+No evident license incompatibility was found in the package metadata reviewed for this source release. This inventory is an engineering review, not legal advice. Repository owners should repeat the inventory whenever the lockfile or Piston digest changes.

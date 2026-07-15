@@ -1,0 +1,50 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Local SQLite state
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+/data/
+/backups/
+
+# Dependencies and generated application output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Piston runtime and Docker state
+piston/data/
+piston/packages/
+piston/runtime/
+
+# Logs, traces, evaluations, and internal/generated data
+logs/
+traces/
+cache/
+.cache/
+evals/
+evaluations/
+benchmark/
+benchmarks/
+experiments/
+reports/
+generated/
+uploads/
+test-results/
+playwright-report/
+
+# Local tools and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+.superpowers/

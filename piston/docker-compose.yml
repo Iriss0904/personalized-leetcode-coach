@@ -1,0 +1,25 @@
+services:
+  api:
+    image: ghcr.io/engineer-man/piston@sha256:2f66b7456189c4d713aa986d98eccd0b6ee16d26c7ec5f21b30e942756fd127a
+    platform: linux/amd64
+    container_name: patterncoach_public_piston
+    restart: unless-stopped
+    privileged: true
+    environment:
+      PISTON_OUTPUT_MAX_SIZE: "4194304"
+    ports:
+      - "127.0.0.1:2000:2000"
+    volumes:
+      - ./data/packages:/piston/packages
+    tmpfs:
+      - /tmp:exec
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:2000/api/v2/runtimes').then(r=>r.ok?r.json():Promise.reject()).then(xs=>{if(!xs.some(x=>x.language==='python'&&x.version==='3.12.0'))process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
