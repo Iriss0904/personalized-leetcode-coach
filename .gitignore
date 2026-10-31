@@ -73,7 +73,9 @@ artifacts/memory-repair/
 .claude/
 .mcp.json
 *.code-workspace
-docs/
+/docs/*
+!/docs/assets/
+/docs/assets/*
 memory-bank/
 notes/
 interview/
@@ -81,3 +83,15 @@ artifacts/
 evals/tmp/
 evals/datasets/chat-intent-v3/real-user-queries-v1.json
 evals/datasets/tool-governance/real-user-complex-seed-v1.json
+
+# Public project showcase: preserve the README and its reviewed demo assets.
+!/README.md
+!/docs/assets/agent-trace.png
+!/docs/assets/demo.gif
+!/docs/assets/flashcard.png
+!/docs/assets/handbook-export.png
+!/docs/assets/handbook.png
+!/docs/assets/mistake-book.png
+!/docs/assets/profile.png
+!/docs/assets/progress.png
+!/docs/assets/today.png
